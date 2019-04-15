@@ -1,10 +1,28 @@
 #include "ThreadSpool.h"
-#include "pthread.h"
-#include "sched.h"
-#include "semaphore.h"
 #include <iostream>
 
 
+
+unsigned ThreadSpool::isAvaliable()
+{
+	unsigned count = 0;
+	for (auto & thread : m_threadPool)
+	{
+		if (!thread.second->busy())
+			count++;
+	}
+	return 0;
+}
+
+ThreadScheduler * ThreadSpool::getAvaliable()
+{
+	for (auto & thread : m_threadPool)
+	{
+		if (!thread.second->busy())
+			return thread.second.get();
+	}
+	return nullptr;
+}
 
 ThreadScheduler * ThreadSpool::get(THREAD_ID id)
 {
@@ -24,11 +42,7 @@ ThreadSpool::ThreadSpool()
 	{
 		if (i == THREAD_ID::ID_MAX)
 			break;
-		m_threadPool.insert(std::make_pair(THREAD_ID(i),std::unique_ptr<ThreadScheduler>()));
+		m_threadPool.insert(std::make_pair(THREAD_ID(i),std::unique_ptr<ThreadScheduler>(new ThreadScheduler)));
 	}
 }
 
-
-ThreadSpool::~ThreadSpool()
-{
-}

@@ -21,6 +21,8 @@ public:
 
 	void addFiber(Fiber job);
 
+	bool busy();
+
 private:
 	void process();
 

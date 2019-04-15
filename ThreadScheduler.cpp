@@ -25,6 +25,12 @@ void ThreadScheduler::addFiber(Fiber task)
 	queuePending.notify_one();
 }
 
+bool ThreadScheduler::busy()
+{
+	bool busy = !jobQueue.empty();
+	return busy;
+}
+
 void ThreadScheduler::process()
 {
 	while (true)
@@ -33,8 +39,8 @@ void ThreadScheduler::process()
 			std::unique_lock<std::mutex> lock(queueMutex);
 			queuePending.wait(lock, [&]() { return m_exit || !jobQueue.empty(); });
 
-			if (m_exit)
-				return;
+			//if (m_exit)
+			//	return;
 
 			jobQueue.front().run();
 			jobQueue.pop_front();

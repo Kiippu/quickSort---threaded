@@ -27,7 +27,11 @@ public:
 	ThreadSpool(ThreadSpool&temp) = delete;
 	void operator=(ThreadSpool const&temp) = delete;
 
-	unsigned count() { return m_threadPool.size(); };
+	size_t count() { return m_threadPool.size(); };
+
+	unsigned isAvaliable();
+
+	ThreadScheduler * getAvaliable();
 
 	ThreadScheduler * get(THREAD_ID);
 
