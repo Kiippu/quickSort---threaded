@@ -5,6 +5,12 @@
 #include <vector>
 #include <iostream>
 
+
+/*
+	Class:			Timer
+	Description:	Timer to count elapsed time of tested algorithms
+*/
+
 /// typedefs for easy type creation
 using TIME_REGISTER = std::map <std::string, std::chrono::time_point<std::chrono::steady_clock>>;
 using TIME_VECTOR_PAIR = std::pair<std::string, long long>;

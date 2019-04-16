@@ -7,10 +7,9 @@
 
 #include "Timer.h"
 #include "ThreadSpool.h"
-#include <Windows.h>
 
-const int ARRAY_SIZE = 1000000;
-const int MAX_VALUE = 1000000;
+const int ARRAY_SIZE = 30000;
+const int MAX_VALUE = 3000;
 
 ThreadSpool * threadSpool = &ThreadSpool::getInstance();
 
@@ -34,8 +33,6 @@ int section(std::vector<int>& array, const int left, const int right) {
 	int j_right = right;
 	// loop through section between leftPtr and rightPtr to find pivots correct placing
 	// while swapping  < and > values in array to pivot with each other 
-
-//#pragma omp parallel for 
 	while (i_left <= j_right) {
 		// find next element from left  that is more then pivotPtr
 		/// NOTE: checking for i_left and j_right are still valid
@@ -63,29 +60,26 @@ void quicksort(std::vector<int> &array, const int left, const int right, const i
 		return;
 	// get the new midpoint
 	int midPtr = section(array, left, right);
-
-	/// TODO: IMPLEMENT TREADSPOOL and CO.!!!
-	/// first 8 are threaded
-	/// after that make Fibers and insert them into current thread
-	/// GGGGGGGGZZZYYYYYYYYY
-	//ThreadScheduler * threadPtr = nullptr;
+	/// 
+	// get the first thread if avaliable
 	if (auto threadPtr0 = threadSpool->getAvaliable())
 	{
-		//threadPtr = ;
+		//thread the first function
 		threadPtr0->addFiber(Fiber([&array,left,arraySize, midPtr]() { quicksort(array, left, midPtr - 1, arraySize); }));
-
-		//if (auto threadPtr1 = threadSpool->getAvaliable())
-			//threadPtr0->addFiber(Fiber([&array, right, arraySize, midPtr]() { quicksort(array, midPtr + 1, right, arraySize); }));
-
 		quicksort(array, midPtr + 1, right, arraySize);
 	}
+	// none avaliable then use current thread to quicksort
 	else
 	{
 		quicksort(array, left, midPtr - 1, arraySize);
-		quicksort(array, midPtr + 1, right, arraySize);
+		// once this thread has sorted the above check if a thread is avaliable to do the next
+		if (auto threadPtr0 = threadSpool->getAvaliable())
+			threadPtr0->addFiber(Fiber([&array, right, arraySize, midPtr]() { quicksort(array, midPtr + 1, right, arraySize); }));
+		// if not then use current thread to quicksort
+		else
+			quicksort(array, midPtr + 1, right, arraySize);
+		
 	}
-
-	
 }
 
 int main() {
@@ -97,15 +91,19 @@ int main() {
 	}
 	size_t arraySize = array->size();
 
-
+	// debug and display data
 	std::cout << "Array size: " << std::to_string(ARRAY_SIZE) << std::endl;
 	std::cout << "Values: [1 - " << std::to_string(MAX_VALUE) << "]" << std::endl;
-
+	// set timer
 	addStartTime("Threaded Quicksort Elapsed: ");
+	// start finish
 	quicksort(*array, 0, arraySize - 1, arraySize);
 	addFinishTime("Threaded Quicksort Elapsed: ");
-
+	// timer finished
+	
+	// print all finished sheets
 	printFinalTimeSheet();
-	print(*array, arraySize);
+	/// UNCOMMENT to print sorted array
+	//print(*array, arraySize);
 	return 0;
 }
